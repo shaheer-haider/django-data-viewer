@@ -1,76 +1,188 @@
-<div class="relative overflow-x-auto shadow-md sm:rounded-lg p-8">
-    <table class="w-full text-sm text-left text-gray-400">
-        <thead class="text-xs text-gray-400 uppercase bg-gray-700">
-            <tr id="column-name-row">
-            </tr>
-        </thead>
-        <tbody id="data-table-body">
-        </tbody>
-    </table>
+<div class="bg-blue-900 flex flex-wrap justify-center items-center gap-4 w-full pr-2 py-4">
+  <p class="text-white">Select The Table to View</p>
+  <select id="table-name-selector" class="bg-gray-900 text-white">
+      {% for table in available_tables %}
+      <option value="{{table}}" class="capitalize">{{table}}</option>
+      {% endfor %}
+  </select>
+  <button onclick="loadNewData()" class="bg-gray-900 text-white py-2 px-6">Load Data</button>
 </div>
 
+<div class="relative overflow-x-auto shadow-md sm:rounded-lg p-1">
+  <h1 id="no-data-message" class="text-gray-300 text-center text-4xl my-16 font-bold">No data found</h1>
+  <table class="w-full text-sm text-left text-gray-400">
+    <thead class="text-xs text-gray-400 uppercase bg-gray-700">
+      <tr id="column-name-row"></tr>
+    </thead>
+    <tbody id="data-table-body"></tbody>
+  </table>
+</div>
+
+<div id="pagination-container" class="flex flex-wrap mt-4 ml-2">
+ 
+</div>
 
 <script>
-    const trClasses = "border-b bg-gray-900 border-gray-700"
-    const dataTableBody = document.getElementById("data-table-body")
-    const columnNameRow = document.getElementById("column-name-row")
-    const createBaseTdHtml = (value) => {
-        let td = document.createElement("td")
-        td.scope = "row"
-        td.classList = ["px-6 py-4 whitespace-nowrap"]
-        let inputField = document.createElement("input")
-        inputField.classList = ["font-medium bg-transparent text-white m-0 p-0 outline-none border-0"]
-        inputField.value = value
-        inputField.type = "text"
-        td.appendChild(inputField)
-        return td
-    }
-    const createActionHtml = (value, id) => {
-        let td = document.createElement("td")
-        td.scope = "row"
-        td.classList = ["px-6 py-4 whitespace-nowrap"]
-        let action = document.createElement("a")
-        action.classList = ["font-medium bg-transparent text-blue-500 m-0 p-0 outline-none border-0"]
-        action.innerHTML = `onclick = ()=>{ delete }`
-        action.href = "/"
-        td.appendChild(action)
-        return td
-    }
-    const createBaseThHtml = (value) => {
-        let th = document.createElement("th")
-        th.scope = "col"
-        th.classList = ["px-6 py-3"]
-        th.innerHTML = value
-        return th
-    }
+  const trClasses = "border-b bg-gray-900 border-gray-700";
+  const dataTableBody = document.getElementById("data-table-body");
+  const columnNameRow = document.getElementById("column-name-row");
+  const tableContainer = document.getElementById("table-container");
+  const paginationContainer = document.getElementById("pagination-container");
+  const noDataMessage = document.getElementById("no-data-message");
+  noDataMessage.style.display = "none";
 
-    function populateDataBase(table_name) {
-        fetch('/table-view/?table=' + table_name)
-            .then((response) => response.json())
-            .then(
-                (data) => {
-                    if (data.length > 0) {
-                        const columnNames = Object.entries(data[0])
-                        columnNames.forEach(
-                            (colName)=>{
-                                let th = createBaseThHtml(colName[0])
-                                columnNameRow.appendChild(th)
-                            }
-                        )
-                        columnNameRow.appendChild(createBaseThHtml("Actions"))
-                        data.forEach(
-                            (col) => {
-                                let tr = document.createElement("tr")
-                                tr.classList = ["border-b bg-gray-900 border-gray-700"]
-                                dataTableBody.appendChild(tr)
-                                for (const [key, value] of Object.entries(col)) {
-                                    tr.appendChild(createBaseTdHtml(value))
-                                }
-                                tr.appendChild(createActionHtml("Edit"), col.id)
-                            }
-                        )
-                    }
-                });
+  var table_name = localStorage.getItem("table_name") || "product";
+
+  const createPaginationBtn = (value)=>{
+    let btn = document.createElement("button");
+    btn.classList = ["bg-gray-800 px-4 py-2 m-1 rounded-xl text-gray-200 hover:bg-blue-500 hover:text-gray-200"];
+    btn.innerHTML = value;
+    btn.onclick = function(){
+      dataTableBody.innerHTML = "";
+      columnNameRow.innerHTML = "";
+      populateDataBase(table_name, value);
     }
-    populateDataBase("product")
+    return btn;
+  }
+
+  const createBaseTdHtml = (key, value, id) => {
+    let td = document.createElement("td");
+    td.scope = "row";
+    td.classList = ["py-4 whitespace-nowrap"];
+    if (key != "id") {
+      let inputField = document.createElement("input");
+      inputField.classList = [
+        "bg-transparent text-white m-0 p-0 outline-none border-0 w-min",
+      ];
+      inputField.id = key +"-"+ id;
+      inputField.value = value;
+      inputField.type = "text";
+      td.appendChild(inputField);
+    } else {
+      td.innerHTML = value;
+    }
+    return td;
+  };
+  const createActionHtml = (value_ids) => {
+    let td = document.createElement("td");
+    td.scope = "row";
+    td.classList = ["py-4 whitespace-nowrap"];
+
+    value_ids.forEach((value_id) => {
+      let action = document.createElement("button");
+      action.classList = [
+        "font-medium bg-transparent text-blue-500 m-0 p-1 outline-none border-0",
+      ];
+      action.innerHTML = value_id[0];
+      action.onclick = function () {
+        if (value_id[0] == "Update") {
+          updateEntry(value_id[1]);
+        } else if (value_id[0] == "Delete") {
+          deleteEntry(value_id[1]);
+        }
+      };
+      td.appendChild(action);
+    });
+    return td;
+  };
+
+  const createBaseThHtml = (value) => {
+    let th = document.createElement("th");
+    th.scope = "col";
+    th.classList = ["py-3"];
+    th.innerHTML = value;
+    return th;
+  };
+
+  function populateDataBase(table_name, page_number=0) {
+    paginationContainer.innerHTML = "";
+    fetch("/table-view/?table=" + table_name + "&page=" + page_number)
+      .then((response) => response.json())
+      .then((response_data) => {
+        data = response_data.data;
+        let number_of_pages = response_data.total_pages;
+
+        for (let i = 1; i <= number_of_pages; i++) {
+          paginationContainer.appendChild(createPaginationBtn(i));
+        }
+
+        if (data.length > 0) {
+          const columnNames = Object.entries(data[0]);
+          columnNames.forEach((colName) => {
+            let th = createBaseThHtml(colName[0]);
+            columnNameRow.appendChild(th);
+          });
+          columnNameRow.appendChild(createBaseThHtml("Actions"));
+          data.forEach((col) => {
+            let tr = document.createElement("tr");
+            tr.classList = ["border-b bg-gray-900 border-gray-700"];
+            tr.id = "tr-" + col.id;
+            dataTableBody.appendChild(tr);
+            for (const [key, value] of Object.entries(col)) {
+              tr.appendChild(createBaseTdHtml(key, value, col.id));
+            }
+            tr.appendChild(
+              createActionHtml([
+                ["Update", col.id],
+                ["Delete", col.id],
+              ])
+            );
+          });
+          noDataMessage.style.display = "none";
+        }
+        else{
+          noDataMessage.style.display = "inline";
+          }
+      });
+  }
+  populateDataBase(table_name);
+
+  function updateEntry(id) {
+    const selectedRow = document.getElementById("tr-" + id);
+    const inputFields = selectedRow.getElementsByTagName("input");
+    let data = {};
+    for (let i = 0; i < inputFields.length; i++) {
+      data[inputFields[i].id.split("-")[0]] = inputFields[i].value;
+    }
+    data.id = id;
+
+    fetch('/table-view/?table=' + table_name, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if(data.error){
+          alert(data.error);
+          return;
+        } 
+        alert("Successfully updated");
+      })
+      .catch((error) => {
+        alert('Error:', error);
+      });
+  }
+
+  function deleteEntry(id) {
+    fetch("/table-view/?table=" + table_name + "&id=" + id, {
+      method: "DELETE",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        document.getElementById("tr-" + id).remove();
+        alert("Entry deleted");
+      });
+  }
+
+function loadNewData(page_number=0){
+  document.getElementById("column-name-row").innerHTML = "";
+  document.getElementById("data-table-body").innerHTML = "";
+  let select_table = document.getElementById("table-name-selector").value;
+  table_name = select_table;
+  localStorage.setItem("table_name", select_table);
+  populateDataBase(select_table, page_number);
+}
 </script>

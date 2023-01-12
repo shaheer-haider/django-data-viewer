@@ -1,17 +1,49 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
+  <head>
+    {% block title %}
+    <title>DB Viewer Django</title>
+    {% endblock title %}
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      ::-webkit-scrollbar {
+        width: 10px;
+      }
 
-<head>
-    {% block title %}<title>DB Viewer Django</title>{% endblock title %}
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #888;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #555;
+      }
+    </style>
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
-    {% block scripts %}
-    {% endblock scripts %}
-</head>
+    <script>
+      function getCookie(cname) {
+        let name = cname + "=";
+        let decodedCookie = decodeURIComponent(document.cookie);
+        let ca = decodedCookie.split(";");
+        for (let i = 0; i < ca.length; i++) {
+          let c = ca[i];
+          while (c.charAt(0) == " ") {
+            c = c.substring(1);
+          }
+          if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+          }
+        }
+        return "";
+      }
+    </script>
+  </head>
 
-<body class="bg-gray-900">
+  <body class="bg-gray-900">
     {% block content %}{% endblock content %}
-</body>
-
+  </body>
 </html>
