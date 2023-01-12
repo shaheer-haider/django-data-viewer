@@ -1,0 +1,76 @@
+<div class="relative overflow-x-auto shadow-md sm:rounded-lg p-8">
+    <table class="w-full text-sm text-left text-gray-400">
+        <thead class="text-xs text-gray-400 uppercase bg-gray-700">
+            <tr id="column-name-row">
+            </tr>
+        </thead>
+        <tbody id="data-table-body">
+        </tbody>
+    </table>
+</div>
+
+
+<script>
+    const trClasses = "border-b bg-gray-900 border-gray-700"
+    const dataTableBody = document.getElementById("data-table-body")
+    const columnNameRow = document.getElementById("column-name-row")
+    const createBaseTdHtml = (value) => {
+        let td = document.createElement("td")
+        td.scope = "row"
+        td.classList = ["px-6 py-4 whitespace-nowrap"]
+        let inputField = document.createElement("input")
+        inputField.classList = ["font-medium bg-transparent text-white m-0 p-0 outline-none border-0"]
+        inputField.value = value
+        inputField.type = "text"
+        td.appendChild(inputField)
+        return td
+    }
+    const createActionHtml = (value, id) => {
+        let td = document.createElement("td")
+        td.scope = "row"
+        td.classList = ["px-6 py-4 whitespace-nowrap"]
+        let action = document.createElement("a")
+        action.classList = ["font-medium bg-transparent text-blue-500 m-0 p-0 outline-none border-0"]
+        action.innerHTML = `onclick = ()=>{ delete }`
+        action.href = "/"
+        td.appendChild(action)
+        return td
+    }
+    const createBaseThHtml = (value) => {
+        let th = document.createElement("th")
+        th.scope = "col"
+        th.classList = ["px-6 py-3"]
+        th.innerHTML = value
+        return th
+    }
+
+    function populateDataBase(table_name) {
+        fetch('/table-view/?table=' + table_name)
+            .then((response) => response.json())
+            .then(
+                (data) => {
+                    if (data.length > 0) {
+                        const columnNames = Object.entries(data[0])
+                        columnNames.forEach(
+                            (colName)=>{
+                                let th = createBaseThHtml(colName[0])
+                                columnNameRow.appendChild(th)
+                            }
+                        )
+                        columnNameRow.appendChild(createBaseThHtml("Actions"))
+                        data.forEach(
+                            (col) => {
+                                let tr = document.createElement("tr")
+                                tr.classList = ["border-b bg-gray-900 border-gray-700"]
+                                dataTableBody.appendChild(tr)
+                                for (const [key, value] of Object.entries(col)) {
+                                    tr.appendChild(createBaseTdHtml(value))
+                                }
+                                tr.appendChild(createActionHtml("Edit"), col.id)
+                            }
+                        )
+                    }
+                });
+    }
+    populateDataBase("product")
+</script>
