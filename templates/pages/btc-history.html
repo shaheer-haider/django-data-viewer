@@ -1,0 +1,68 @@
+{% extends "../components/base.html" %} 
+{% block content %} 
+{% include "./../components/home-title.html" %}
+
+<h1 class="text-white text-xlm ml-20">
+    BTC to USD Graph from 10-Nov-2022 to 30-Nov-2022
+</h1>
+<canvas id="chart" class="!h-[600px] !w-[80vw]"></canvas>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.js"></script>
+<script>
+    fetch("/btc-history").then(function(response) {
+        return response.json();
+    }).then(function(data) {
+        drawChart("line", data.dates, data.rates);
+    });
+
+  function drawChart(chartType, xValues, yValues) {
+
+    new Chart("chart", {
+        type: chartType,
+        data: {
+          labels: xValues,
+          datasets: [{
+            backgroundColor: "rgba(255,159,64,0.2)",
+            borderColor: 'rgb(255, 159, 64)',
+            data: yValues,
+            tension: 0.2,
+          }]
+        },
+        options: {
+            title: {
+                display: false,
+                fontSize: 35
+            },
+        
+            legend: {
+                display: false
+            },
+        
+            layout: {
+                padding: {
+                left: 100,
+                right: 100,
+                top: 100,
+                bottom: 100
+                }
+            },
+        
+    
+            tooltips: {
+                callbacks: {
+                title: function() {}
+                },
+                displayColors: false,
+                yPadding: 10,
+                xPadding: 10,
+                position: 'nearest',
+                caretSize: 10,
+                backgroundColor: 'rgba(255,255,255,.9)',
+                bodyFontSize: 15,
+                bodyFontColor: '#303030'
+            }
+        }
+    }  );      
+  }
+</script>
+{% endblock content %}

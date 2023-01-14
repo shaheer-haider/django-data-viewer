@@ -1,4 +1,4 @@
-from core.models import Product, Payments, Currency
+from core.models import Product, Payments, Currency, CurrencyHistory
 from rest_framework import serializers
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -16,4 +16,10 @@ class PaymentSerializer(serializers.ModelSerializer):
 class CurrencySerializer(serializers.ModelSerializer):
     class Meta:
         model = Currency
+        fields = "__all__"
+
+
+class CurrencyHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CurrencyHistory
         fields = "__all__"

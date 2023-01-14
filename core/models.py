@@ -33,3 +33,13 @@ class Currency(models.Model):
     
     def __str__(self):
         return self.name
+    
+    
+class CurrencyHistory(models.Model):
+    date = models.DateField()
+    rate = models.FloatField()
+    coin = models.CharField(max_length=255, default="BTC")
+    target_currency = models.CharField(max_length=255, default="USD")
+    
+    def __str__(self):
+        return self.coin + " to " + self.target_currency + " on " + str(self.date)

@@ -1,11 +1,20 @@
-<div class="bg-blue-900 flex flex-wrap justify-center items-center gap-4 w-full pr-2 py-4">
-  <p class="text-white">Select The Table to View</p>
-  <select id="table-name-selector" class="bg-gray-900 text-white">
-      {% for table in available_tables %}
-      <option value="{{table}}" class="capitalize">{{table}}</option>
-      {% endfor %}
-  </select>
-  <button onclick="loadNewData()" class="bg-gray-900 text-white py-2 px-6">Load Data</button>
+<div class="text-white bg-blue-900 flex flex-wrap justify-around items-center gap-4 gap-y-12 w-full pr-2 py-4">
+  <div class="flex p-1 gap-4 items-center flex-wrap">
+    <p class="text-white">Select The Table to View</p>
+  <div class="flex gap-4 items-center flex-wrap">
+    
+    <select onchange="loadNewData()" id="table-name-selector" class="bg-gray-900 text-white">
+        {% for table in available_tables %}
+        <option value="{{table}}" class="capitalize">{{table}}</option>
+        {% endfor %}
+    </select>
+</div>
+</div>
+
+<div class="flex gap-4 items-center flex-wrap">
+  <input placeholder="Search" onchange="searchData()" type="text" id="search" class="bg-gray-900 text-white">
+    {% comment %} <button onclick="searchTable()" class="bg-gray-900 text-white py-2 px-6">Search</button> {% endcomment %}
+  </div>
 </div>
 
 <div class="relative overflow-x-auto shadow-md sm:rounded-lg p-1">
@@ -30,13 +39,24 @@
   const paginationContainer = document.getElementById("pagination-container");
   const noDataMessage = document.getElementById("no-data-message");
   noDataMessage.style.display = "none";
+  var searching = false;
 
   var table_name = localStorage.getItem("table_name") || "product";
+
+
+  const tableSelector = document.getElementById("table-name-selector");
+  for (let i = 0; i < tableSelector.options.length; i++) {
+    if (tableSelector.options[i].value == table_name) {
+      tableSelector.options[i].selected = true;
+    }
+  }
+
+
 
   const createPaginationBtn = (value)=>{
     let btn = document.createElement("button");
     btn.classList = ["bg-gray-800 px-4 py-2 m-1 rounded-xl text-gray-200 hover:bg-blue-500 hover:text-gray-200"];
-    btn.innerHTML = value;
+    btn.innerHTML = value + 1;
     btn.onclick = function(){
       dataTableBody.innerHTML = "";
       columnNameRow.innerHTML = "";
@@ -94,15 +114,15 @@
     return th;
   };
 
-  function populateDataBase(table_name, page_number=0) {
+  function populateDataBase(table_name, page_number=0, query="") {
     paginationContainer.innerHTML = "";
-    fetch("/table-view/?table=" + table_name + "&page=" + page_number)
+    fetch("/table-view/?table=" + table_name + "&page=" + page_number + "&query=" + query)
       .then((response) => response.json())
       .then((response_data) => {
         data = response_data.data;
         let number_of_pages = response_data.total_pages;
 
-        for (let i = 1; i <= number_of_pages; i++) {
+        for (let i = 0; i <= number_of_pages; i++) {
           paginationContainer.appendChild(createPaginationBtn(i));
         }
 
@@ -117,13 +137,16 @@
             let tr = document.createElement("tr");
             tr.classList = ["border-b bg-gray-900 border-gray-700"];
             tr.id = "tr-" + col.id;
+            tr.onkeyup = function () {
+              updateEntry(col.id);
+            };
             dataTableBody.appendChild(tr);
             for (const [key, value] of Object.entries(col)) {
               tr.appendChild(createBaseTdHtml(key, value, col.id));
             }
             tr.appendChild(
               createActionHtml([
-                ["Update", col.id],
+                // ["Update", col.id],
                 ["Delete", col.id],
               ])
             );
@@ -133,6 +156,11 @@
         else{
           noDataMessage.style.display = "inline";
           }
+      }).finally(()=>{
+        if(searching){
+          searching = false;
+          return;
+        }
       });
   }
   populateDataBase(table_name);
@@ -159,7 +187,6 @@
           alert(data.error);
           return;
         } 
-        alert("Successfully updated");
       })
       .catch((error) => {
         alert('Error:', error);
@@ -177,12 +204,24 @@
       });
   }
 
-function loadNewData(page_number=0){
+function loadNewData(page_number=0, query="", current_table_name=""){
   document.getElementById("column-name-row").innerHTML = "";
   document.getElementById("data-table-body").innerHTML = "";
-  let select_table = document.getElementById("table-name-selector").value;
-  table_name = select_table;
-  localStorage.setItem("table_name", select_table);
-  populateDataBase(select_table, page_number);
+  if(current_table_name == ""){
+    let select_table = document.getElementById("table-name-selector").value;
+    table_name = select_table;
+    localStorage.setItem("table_name", select_table);
+  }
+  populateDataBase(table_name, page_number, query);
 }
+
+
+function searchData() {
+  if(!searching){
+    searching = true;
+    var search = document.getElementById("search").value;
+    loadNewData(0, search, table_name);
+  }
+}
+
 </script>
