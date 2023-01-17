@@ -1,4 +1,4 @@
-from core.models import Product, Payments, Currency, CurrencyHistory
+from core.models import DynamicJson, Product, Payments, Currency, CurrencyHistory
 from rest_framework import serializers
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -22,4 +22,10 @@ class CurrencySerializer(serializers.ModelSerializer):
 class CurrencyHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = CurrencyHistory
+        fields = "__all__"
+
+
+class DynamicJsonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DynamicJson
         fields = "__all__"

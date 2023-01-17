@@ -43,3 +43,11 @@ class CurrencyHistory(models.Model):
     
     def __str__(self):
         return self.coin + " to " + self.target_currency + " on " + str(self.date)
+
+
+class DynamicJson(models.Model):
+    name = models.CharField(max_length=255)
+    json = models.JSONField()
+    
+    def __str__(self):
+        return self.name

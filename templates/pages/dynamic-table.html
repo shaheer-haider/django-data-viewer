@@ -1,0 +1,107 @@
+{% extends "../components/base.html" %}
+{% block content %}
+<div id="app">
+  <h1>Dynamic JSON</h1>
+
+  <p>Here is a dynamic JSON response from the server:</p>
+  <div class="p-4 m-8 bg-gray-200">
+    <textarea id="json_text_area" class="w-full h-[400px] text-sm" >[[json_data]]</textarea>
+    {% comment %} <button @click="updateJSON" class="p-2 bg-gray-700 text-white">Update</button> {% endcomment %}
+  </div>
+
+  <p>Here is a dynamic Table of Contents from the server:</p>
+
+  <div v-if="json_data" class="p-4 grid grid-cols-3 gap-4 bg-gray-200">
+    <div class="col-span-3">
+      <h3 class="text-lg font-medium">Classes</h3>
+      <ul class="list-inside">
+        <li v-for="tag, index in json_data.classes" :key="tag" class="text-sm border-1 border-black">
+          [[index+1]]. [[ tag ]]
+        </li>
+      </ul>
+    </div>
+    <div class="col-span-3">
+      <h3 class="text-lg font-medium">Annotations</h3>
+      <p class="text-sm">[[ json_data.annotations[0][0] ]]</p>
+      <div class='w-full h-[1px] bg-gray-900'></div>
+    </div>
+    <div class="col-span-1">
+      <h3 class="text-lg font-medium">Annotation Data</h3>
+      <table class="table-auto">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="px-4 py-2">Start</th>
+            <th class="px-4 py-2">End</th>
+            <th class="px-4 py-2">Text</th>
+            <th class="px-4 py-2">Entity</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="annotation in json_data.annotations[0][1].entities"
+            :key="annotation"
+            class="text-sm"
+          >
+            <td class="px-4 py-2">[[ annotation[0] ]]</td>
+            <td class="px-4 py-2">[[ annotation[1] ]]</td>
+            <td class="px-4 py-2">[[ json_data.annotations[0][0].slice(annotation[0], annotation[1]) ]]</td>
+            <td class="px-4 py-2">[[ annotation[2] ]]</td>
+          </tr>
+        </tbody>
+      </table>
+      
+    </div>
+    <div class="col-span-1">
+        <h3 class="text-lg font-medium">Annotation Parse Data</h3>
+        <table class="table-auto">
+          <thead>
+            <tr class="bg-gray-200">
+              <th
+              v-for="annotation in json_data.annotations[0][1].entities"
+               class="px-4 py-2">[[ annotation[2] ]]</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="text-sm"
+            > 
+              <td 
+              v-for="annotation in json_data.annotations[0][1].entities"
+              :key="annotation" class="px-4 py-2">[[ json_data.annotations[0][0].slice(annotation[0], annotation[1]) ]]</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/vue@3.2.45/dist/vue.global.js"></script>
+<script>
+  function fetchDynamicJson(id = 1) {
+    return fetch("/dynamic-json/?id=" + String(id))
+      .then((response) => response.json())
+      .then((data) => {
+        return data.json;
+      });
+  }
+  const { createApp, ref, computed } = Vue;
+
+  const app = createApp({
+    template: document.getElementById("app").innerHTML,
+    delimiters: ["[[", "]]"],
+
+    setup() {
+      let json_data = ref(null);
+      fetchDynamicJson(2).then((response) => {
+        json_data.value = response;
+      });
+
+      function updateJSON(){
+        json_data.value = JSON.parse(document.getElementById('json_text_area').value);
+      }
+      return { json_data, updateJSON };
+    },
+  });
+
+  app.mount("#app");
+</script>
+{% endblock content %}

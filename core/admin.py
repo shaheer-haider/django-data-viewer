@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from core.models import CurrencyHistory, Product, Payments, Currency
+from core.models import CurrencyHistory, DynamicJson, Product, Payments, Currency
 
 class ProductAdmin(admin.ModelAdmin):
     list_display = ("name", "color", "category", "price")
@@ -25,3 +25,8 @@ class CurrencyHistoryAdmin(admin.ModelAdmin):
     list_display = ("date", "rate", "coin", "target_currency")
     
 admin.site.register(CurrencyHistory, CurrencyHistoryAdmin)
+
+class DynamicJsonAdmin(admin.ModelAdmin):
+    list_display = ("name",)
+    
+admin.site.register(DynamicJson, DynamicJsonAdmin)

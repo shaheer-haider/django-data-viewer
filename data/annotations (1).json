@@ -1,0 +1,28 @@
+{
+  "classes": [
+    "TAG1",
+    "TAG2",
+    "TAG8",
+    "TAG7",
+    "TAG10",
+    "TAG34",
+    "DETAILS",
+    "PROJECT1 DURATION",
+    "PROJECT2 DURATION",
+    "PROJECT1 CUSTOMER"
+  ],
+  "annotations": [
+    [
+      "ips to prepare the text file\n\t•\tBreak your content in paragraphs or passages\n\t•\tMaintain a consistent seperator between the passages.Eg., newline, empty line or a text seperator like ",
+      {
+        "entities": [
+          [7, 14, "PROJECT1 CUSTOMER"],
+          [32, 50, "PROJECT1 CUSTOMER"],
+          [68, 76, "PROJECT1 DURATION"],
+          [102, 119, "PROJECT1 CUSTOMER"],
+          [139, 158, "PROJECT2 DURATION"]
+        ]
+      }
+    ]
+  ]
+}

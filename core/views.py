@@ -1,11 +1,12 @@
 from django.shortcuts import render
-from core.models import Currency, Payments, Product, CurrencyHistory
-from core.serializers import CurrencyHistorySerializer, ProductSerializer, PaymentSerializer, CurrencySerializer
+from core.models import Currency, DynamicJson, Payments, Product, CurrencyHistory
+from core.serializers import CurrencyHistorySerializer, DynamicJsonSerializer, ProductSerializer, PaymentSerializer, CurrencySerializer
 from rest_framework import views
 from rest_framework.response import Response
 from django.db.models import Q
 from functools import reduce
 import operator
+from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
 def index(request):
@@ -15,6 +16,16 @@ def index(request):
 
 def BTCHistory(request):
     return render(request, 'pages/btc-history.html')
+
+
+def dynamic_table(request):
+    return render(request, 'pages/dynamic-table.html')
+
+class DynamicJSONData(views.APIView):
+    def get(self, request):
+        id = int(request.query_params.get("id", 1))
+        return Response(DynamicJsonSerializer(DynamicJson.objects.get(id=id)).data)
+
 
 class BTCHistoryView(views.APIView):
     def get(self, request):
